@@ -63,6 +63,11 @@ CREATE INDEX IF NOT EXISTS idx_health_contents_slug ON health_contents(slug);
 CREATE INDEX IF NOT EXISTS idx_health_contents_status ON health_contents(status);
 CREATE INDEX IF NOT EXISTS idx_health_contents_published ON health_contents(published_at DESC);
 
+-- 인용된 자료 (다대다, 마이그레이션: 2026-04-29_health_contents_source_ids.sql)
+ALTER TABLE health_contents
+  ADD COLUMN IF NOT EXISTS source_ids UUID[] DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS idx_health_contents_sources ON health_contents USING GIN (source_ids);
+
 -- ─────────────────────────────────────────────
 -- 관리자 액션 로그
 -- ─────────────────────────────────────────────
