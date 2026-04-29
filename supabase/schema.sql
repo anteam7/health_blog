@@ -96,3 +96,51 @@ CREATE POLICY "health_product_prices read" ON health_product_prices FOR SELECT T
 CREATE POLICY "health_contents read"       ON health_contents       FOR SELECT TO anon USING (status = 'published');
 
 -- health_admin_actions 는 anon 차단 — service_role 만 INSERT/SELECT 가능
+
+-- ─────────────────────────────────────────────
+-- 자료 수집 (논문·뉴스 등) — 콘텐츠 작성 전 수집 단계
+-- (마이그레이션: 2026-04-29_health_sources.sql 와 동일 — 단일 소스 유지용 통합)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS health_sources (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_type VARCHAR(20) NOT NULL,         -- paper | news | guideline | video | other
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  doi VARCHAR(200),
+  pmid VARCHAR(50),
+  authors TEXT[],
+  outlet VARCHAR(200),
+  published_date DATE,
+  abstract TEXT,
+  key_findings TEXT,
+  topics TEXT[],
+  quality_score SMALLINT CHECK (quality_score BETWEEN 1 AND 5),
+  status VARCHAR(20) NOT NULL DEFAULT 'collected', -- collected | reviewed | used | archived
+  linked_content_id UUID REFERENCES health_contents(id) ON DELETE SET NULL,
+  notes TEXT,
+  collected_by VARCHAR(200),
+  collected_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_health_sources_status     ON health_sources(status);
+CREATE INDEX IF NOT EXISTS idx_health_sources_type       ON health_sources(source_type);
+CREATE INDEX IF NOT EXISTS idx_health_sources_collected  ON health_sources(collected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_health_sources_topics     ON health_sources USING GIN (topics);
+CREATE INDEX IF NOT EXISTS idx_health_sources_linked     ON health_sources(linked_content_id);
+
+CREATE OR REPLACE FUNCTION health_sources_set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_health_sources_updated_at ON health_sources;
+CREATE TRIGGER trg_health_sources_updated_at
+  BEFORE UPDATE ON health_sources
+  FOR EACH ROW EXECUTE FUNCTION health_sources_set_updated_at();
+
+ALTER TABLE health_sources ENABLE ROW LEVEL SECURITY;
+-- 정책 없음 = anon 차단. service_role 만 접근.
