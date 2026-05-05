@@ -3,6 +3,8 @@ import LogoutButton from "../LogoutButton";
 
 const NAV = [
   { href: "/admin", label: "대시보드" },
+  { href: "/admin/topics", label: "토픽" },
+  { href: "/admin/contents", label: "콘텐츠" },
   { href: "/admin/sources", label: "자료 수집" },
 ];
 
