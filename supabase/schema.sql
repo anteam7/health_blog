@@ -134,6 +134,50 @@ CREATE INDEX IF NOT EXISTS idx_health_sources_collected  ON health_sources(colle
 CREATE INDEX IF NOT EXISTS idx_health_sources_topics     ON health_sources USING GIN (topics);
 CREATE INDEX IF NOT EXISTS idx_health_sources_linked     ON health_sources(linked_content_id);
 
+-- ─────────────────────────────────────────────
+-- 토픽 (콘텐츠 클러스터) — 시그널→토픽→글 로드맵→콘텐츠 4계층의 1급 시민
+-- 마이그레이션: 2026-05-02_health_topics.sql
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS health_topics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug VARCHAR(100) UNIQUE NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  keywords TEXT[],
+  status VARCHAR(20) NOT NULL DEFAULT 'candidate',  -- candidate | planned | in_progress | completed | archived
+  priority SMALLINT DEFAULT 3,
+  cluster_roadmap JSONB DEFAULT '[]'::jsonb,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_health_topics_status   ON health_topics(status);
+CREATE INDEX IF NOT EXISTS idx_health_topics_priority ON health_topics(priority DESC);
+CREATE INDEX IF NOT EXISTS idx_health_topics_keywords ON health_topics USING GIN (keywords);
+
+CREATE OR REPLACE FUNCTION health_topics_set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_health_topics_updated_at ON health_topics;
+CREATE TRIGGER trg_health_topics_updated_at
+  BEFORE UPDATE ON health_topics
+  FOR EACH ROW EXECUTE FUNCTION health_topics_set_updated_at();
+
+ALTER TABLE health_topics ENABLE ROW LEVEL SECURITY;
+-- 정책 없음 = anon 차단 (어드민 service_role 전용)
+
+-- 기존 테이블에 단일 주 토픽 FK
+ALTER TABLE health_contents
+  ADD COLUMN IF NOT EXISTS topic_id UUID REFERENCES health_topics(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_health_contents_topic ON health_contents(topic_id);
+
+ALTER TABLE health_sources
+  ADD COLUMN IF NOT EXISTS topic_id UUID REFERENCES health_topics(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_health_sources_topic ON health_sources(topic_id);
+
 CREATE OR REPLACE FUNCTION health_sources_set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
