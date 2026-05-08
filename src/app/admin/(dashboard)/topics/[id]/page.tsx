@@ -10,6 +10,7 @@ import {
 } from "@/lib/topics";
 import { contentStatusLabel } from "@/lib/contents";
 import { sourceTypeLabel } from "@/lib/sources";
+import CreateDraftButton from "./CreateDraftButton";
 
 export const dynamic = "force-dynamic";
 
@@ -157,18 +158,26 @@ export default async function TopicDetailPage({
                   <div className="text-xs text-gray-500 mt-0.5">{r.notes}</div>
                 )}
               </div>
-              <Badge
-                variant={
-                  r.status === "published"
-                    ? "default"
-                    : r.status === "draft" || r.status === "review"
-                      ? "secondary"
-                      : "outline"
-                }
-                className="shrink-0 mt-0.5"
-              >
-                {roadmapItemStatusLabel(r.status)}
-              </Badge>
+              <div className="flex items-start gap-2 shrink-0 mt-0.5">
+                <Badge
+                  variant={
+                    r.status === "published"
+                      ? "default"
+                      : r.status === "draft" || r.status === "review"
+                        ? "secondary"
+                        : "outline"
+                  }
+                >
+                  {roadmapItemStatusLabel(r.status)}
+                </Badge>
+                {r.status === "planned" && !r.content_id && (
+                  <CreateDraftButton
+                    topicId={topic.id}
+                    order={r.order}
+                    title={r.title}
+                  />
+                )}
+              </div>
             </div>
           ))}
         </div>
