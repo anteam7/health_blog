@@ -421,6 +421,16 @@ export default function ContentEditor({ initial, topicTitle, sources }: Props) {
               ))}
             </div>
           )}
+          {edit.cover_image_url && (
+            <div className="relative w-full aspect-[16/9] mt-6 overflow-hidden rounded-lg bg-gray-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={edit.cover_image_url}
+                alt={edit.title || "cover"}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          )}
           <article className="prose prose-zinc max-w-none prose-headings:tracking-tight prose-a:text-blue-700 prose-a:underline-offset-2 mt-6">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
