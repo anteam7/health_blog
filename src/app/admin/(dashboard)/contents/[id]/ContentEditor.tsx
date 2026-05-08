@@ -368,9 +368,10 @@ export default function ContentEditor({ initial, topicTitle, sources }: Props) {
           </Field>
           <Field
             label="커버 이미지"
-            hint="글 상단 hero · 목록 썸네일 · OG 이미지에 사용. Unsplash 무료 검색 또는 직접 URL 입력."
+            hint="글 상단 hero · 목록 썸네일 · OG 이미지에 사용. Unsplash 무료 검색 / AI 생성 / 직접 URL 입력 중 선택."
           >
             <CoverImagePicker
+              contentId={post.id}
               value={edit.cover_image_url}
               onChange={(url) => patch("cover_image_url", url)}
               defaultQuery={post.tags?.[0] || edit.title}
@@ -537,24 +538,36 @@ interface UnsplashSearchPhoto {
 }
 
 function CoverImagePicker({
+  contentId,
   value,
   onChange,
   defaultQuery,
 }: {
+  contentId: string;
   value: string;
   onChange: (url: string) => void;
   defaultQuery?: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openPanel, setOpenPanel] = useState<"unsplash" | "ai" | null>(null);
+
+  // Unsplash 검색 상태
   const [query, setQuery] = useState(defaultQuery ?? "");
   const [photos, setPhotos] = useState<UnsplashSearchPhoto[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchErr, setSearchErr] = useState<string | null>(null);
+
+  // AI 생성 상태
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [aiMsg, setAiMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   async function search(q: string) {
     if (!q.trim()) return;
-    setBusy(true);
-    setErr(null);
+    setSearching(true);
+    setSearchErr(null);
     try {
       const res = await fetch(
         `/api/admin/unsplash/search?q=${encodeURIComponent(q.trim())}`,
@@ -563,15 +576,14 @@ function CoverImagePicker({
       if (!res.ok) throw new Error(data?.error ?? "검색 실패");
       setPhotos((data.results ?? []) as UnsplashSearchPhoto[]);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "검색 실패");
+      setSearchErr(e instanceof Error ? e.message : "검색 실패");
       setPhotos([]);
     } finally {
-      setBusy(false);
+      setSearching(false);
     }
   }
 
-  async function pick(p: UnsplashSearchPhoto) {
-    // Unsplash API 가이드라인: 사진 사용 결정 시 download tracking 호출
+  async function pickUnsplash(p: UnsplashSearchPhoto) {
     try {
       await fetch("/api/admin/unsplash/track", {
         method: "POST",
@@ -581,14 +593,50 @@ function CoverImagePicker({
     } catch {
       // best-effort
     }
-    // raw URL + 사이즈 파라미터로 cover URL 구성
     const u = new URL(p.raw);
     u.searchParams.set("w", "1600");
     u.searchParams.set("q", "80");
     u.searchParams.set("fm", "jpg");
     u.searchParams.set("fit", "crop");
     onChange(u.toString());
-    setOpen(false);
+    setOpenPanel(null);
+  }
+
+  async function generateAi() {
+    if (
+      !confirm(
+        "AI(Gemini Nano Banana)로 cover 이미지를 생성합니다. 같은 글이면 기존 cover 가 덮어쓰여요. 30~60초 걸립니다. 계속할까요?",
+      )
+    )
+      return;
+    setGenerating(true);
+    setAiMsg(null);
+    try {
+      const res = await fetch(
+        `/api/admin/contents/${contentId}/generate-cover`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: aiPrompt.trim() || undefined,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "생성 실패");
+      onChange(data.publicUrl as string);
+      setAiMsg({
+        type: "success",
+        text: `✅ 생성 완료 — ${data.modelUsed} · ${data.sizeKB}KB. 저장 버튼을 눌러 확정하세요.`,
+      });
+    } catch (e) {
+      setAiMsg({
+        type: "error",
+        text: e instanceof Error ? e.message : "생성 실패",
+      });
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
@@ -601,20 +649,32 @@ function CoverImagePicker({
           className="w-full max-w-md rounded-md border aspect-[16/9] object-cover"
         />
       )}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="https://… (직접 URL 입력 가능)"
-          className="flex-1"
+          className="flex-1 min-w-[200px]"
         />
         <Button
           type="button"
-          variant="outline"
+          variant={openPanel === "unsplash" ? "default" : "outline"}
           size="sm"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() =>
+            setOpenPanel((p) => (p === "unsplash" ? null : "unsplash"))
+          }
+          className="whitespace-nowrap"
         >
-          {open ? "닫기" : "Unsplash 검색"}
+          🔎 Unsplash
+        </Button>
+        <Button
+          type="button"
+          variant={openPanel === "ai" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setOpenPanel((p) => (p === "ai" ? null : "ai"))}
+          className="whitespace-nowrap"
+        >
+          ✨ AI 생성
         </Button>
         {value && (
           <Button
@@ -629,7 +689,7 @@ function CoverImagePicker({
         )}
       </div>
 
-      {open && (
+      {openPanel === "unsplash" && (
         <div className="rounded-md border bg-gray-50 p-3 space-y-3">
           <div className="flex gap-2">
             <Input
@@ -648,23 +708,21 @@ function CoverImagePicker({
               type="button"
               size="sm"
               onClick={() => search(query)}
-              disabled={busy || !query.trim()}
+              disabled={searching || !query.trim()}
             >
-              {busy ? "검색 중…" : "검색"}
+              {searching ? "검색 중…" : "검색"}
             </Button>
           </div>
 
-          {err && (
+          {searchErr && (
             <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
-              {err}
+              {searchErr}
             </div>
           )}
 
-          {photos.length === 0 && !busy && !err && (
+          {photos.length === 0 && !searching && !searchErr && (
             <p className="text-xs text-gray-500">
-              검색어를 입력하고 Enter 또는 검색 버튼. 영어 검색이 결과가 더 풍부해요
-              (예: &quot;diet&quot;, &quot;weight loss&quot;, &quot;healthy
-              breakfast&quot;).
+              검색어를 입력하고 Enter 또는 검색 버튼. 영어 검색이 결과가 더 풍부해요.
             </p>
           )}
 
@@ -675,7 +733,7 @@ function CoverImagePicker({
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => pick(p)}
+                    onClick={() => pickUnsplash(p)}
                     className="group relative overflow-hidden rounded-md border bg-white hover:ring-2 hover:ring-blue-500 transition"
                     title={`${p.alt} — ${p.photographer}`}
                   >
@@ -693,11 +751,57 @@ function CoverImagePicker({
                 ))}
               </div>
               <p className="text-[11px] text-gray-500">
-                Unsplash 무료 사진. 클릭 시 자동으로 cover URL 채우고 다운로드
-                트래킹을 호출합니다 (Unsplash API 가이드라인).
+                Unsplash 무료 사진. 클릭 시 cover URL 자동 채움 + 다운로드 트래킹 호출.
               </p>
             </>
           )}
+        </div>
+      )}
+
+      {openPanel === "ai" && (
+        <div className="rounded-md border bg-purple-50/40 p-3 space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-700">
+              커스텀 프롬프트 (선택 — 비우면 글 제목·태그 기반 자동 생성)
+            </label>
+            <Textarea
+              rows={3}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder={`영어 권장. 예:\nA clean editorial illustration of an empty plate and clock on warm cream background, 16:9, no text`}
+              disabled={generating}
+              className="font-mono text-xs"
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              type="button"
+              size="sm"
+              onClick={generateAi}
+              disabled={generating}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {generating ? "생성 중… (30–60초)" : "✨ AI 생성"}
+            </Button>
+            <span className="text-[11px] text-gray-500">
+              Gemini 3.1 Flash Image (Nano Banana 2). Supabase Storage 에 자동 저장.
+            </span>
+          </div>
+          {aiMsg && (
+            <div
+              className={`text-xs rounded px-3 py-2 border ${
+                aiMsg.type === "success"
+                  ? "bg-green-50 border-green-200 text-green-800"
+                  : "bg-red-50 border-red-200 text-red-800"
+              }`}
+            >
+              {aiMsg.text}
+            </div>
+          )}
+          <p className="text-[11px] text-gray-500">
+            한 글당 같은 slug 로 덮어쓰기 됩니다. 마음에 안 들면 다시 생성하시면
+            기존 이미지가 교체돼요. 캐시 버스팅 쿼리(?v=…)가 자동으로 붙습니다.
+          </p>
         </div>
       )}
     </div>
