@@ -147,12 +147,12 @@ async function run() {
   if (existingPost) {
     const { data, error } = await sb
       .from("health_contents")
+      // ⚠️ status 는 update 에서 제외 — published 글이 draft 로 되돌아가는 사고 방지
       .update({
         title: POST.title,
         excerpt: POST.excerpt,
         body_md: POST.body_md,
         tags: POST.tags,
-        status: POST.status,
         cover_image_url: POST.cover_image_url,
         source_ids: sourceIds,
         topic_id: topic.id,
