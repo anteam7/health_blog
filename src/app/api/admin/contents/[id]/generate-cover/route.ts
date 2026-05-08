@@ -36,12 +36,14 @@ export async function POST(
   const sb = createAdminClient();
   const { data: post } = await sb
     .from("health_contents")
-    .select("id, slug, title, tags")
+    .select("id, slug, title, excerpt, body_md, tags")
     .eq("id", id)
     .maybeSingle<{
       id: string;
       slug: string;
       title: string;
+      excerpt: string | null;
+      body_md: string | null;
       tags: string[] | null;
     }>();
 
@@ -54,6 +56,8 @@ export async function POST(
       contentId: post.id,
       slug: post.slug,
       title: post.title,
+      excerpt: post.excerpt,
+      bodyMd: post.body_md,
       tags: post.tags,
       customPrompt,
     });
