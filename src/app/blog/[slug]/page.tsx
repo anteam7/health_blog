@@ -120,15 +120,13 @@ export async function generateMetadata({
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at,
       tags: post.tags ?? undefined,
-      images: post.cover_image_url
-        ? [{ url: post.cover_image_url, width: 1600, height: 900 }]
-        : undefined,
+      // images 는 opengraph-image.tsx file convention 이 자동 처리
     },
     twitter: {
-      card: post.cover_image_url ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: post.title,
       description: post.excerpt ?? undefined,
-      images: post.cover_image_url ? [post.cover_image_url] : undefined,
+      // images 도 file convention 이 자동 fallback
     },
   };
 }
