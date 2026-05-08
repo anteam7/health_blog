@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
 import type { HealthContent } from "@/lib/contents";
+import type {
+  HealthBlogPostReview,
+  ReviewPerspectivePreset,
+} from "@/lib/reviews";
 import ContentEditor from "./ContentEditor";
+import ReviewPanel from "./ReviewPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -26,13 +31,23 @@ export default async function ContentEditPage({
   const { id } = await params;
   const sb = createAdminClient();
 
-  const { data: postRaw, error } = await sb
-    .from("health_contents")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data: postRaw, error }, { data: reviewsRaw }, { data: perspectivesRaw }] =
+    await Promise.all([
+      sb.from("health_contents").select("*").eq("id", id).maybeSingle(),
+      sb
+        .from("health_blog_post_reviews")
+        .select("*")
+        .eq("content_id", id)
+        .order("created_at", { ascending: false }),
+      sb
+        .from("health_blog_review_perspectives")
+        .select("id, name, created_at, created_by")
+        .order("created_at", { ascending: false }),
+    ]);
   if (error || !postRaw) notFound();
   const post = postRaw as HealthContent;
+  const reviews = (reviewsRaw ?? []) as HealthBlogPostReview[];
+  const perspectives = (perspectivesRaw ?? []) as ReviewPerspectivePreset[];
 
   let topicTitle: string | null = null;
   if (post.topic_id) {
@@ -65,6 +80,12 @@ export default async function ContentEditPage({
           ← 콘텐츠 목록
         </Link>
       </div>
+
+      <ReviewPanel
+        contentId={post.id}
+        reviews={reviews}
+        savedPerspectives={perspectives}
+      />
 
       <ContentEditor
         key={post.updated_at}
