@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
@@ -84,6 +85,15 @@ export async function generateMetadata({
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at,
       tags: post.tags ?? undefined,
+      images: post.cover_image_url
+        ? [{ url: post.cover_image_url, width: 1600, height: 900 }]
+        : undefined,
+    },
+    twitter: {
+      card: post.cover_image_url ? "summary_large_image" : "summary",
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      images: post.cover_image_url ? [post.cover_image_url] : undefined,
     },
   };
 }
@@ -134,6 +144,19 @@ export default async function BlogPostPage({
               )}
             </div>
           </header>
+
+          {post.cover_image_url && (
+            <div className="relative w-full aspect-[16/9] mb-10 overflow-hidden rounded-lg bg-gray-100">
+              <Image
+                src={post.cover_image_url}
+                alt={post.title}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-cover"
+              />
+            </div>
+          )}
 
           <MedicalDisclaimer />
 

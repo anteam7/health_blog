@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -92,22 +93,41 @@ function PostCard({ post }: { post: RecentPost }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="block rounded-lg border bg-white p-5 hover:border-gray-400 transition-colors"
+      className="group block overflow-hidden rounded-lg border bg-white hover:border-gray-400 transition-colors"
     >
-      <h3 className="font-semibold text-lg leading-snug">{post.title}</h3>
-      {post.excerpt && (
-        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
-      )}
-      <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
-        {post.published_at && (
-          <span>{new Date(post.published_at).toLocaleDateString("ko-KR")}</span>
+      <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
+        {post.cover_image_url ? (
+          <Image
+            src={post.cover_image_url}
+            alt={post.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 text-blue-300 text-sm">
+            헬스스캐너
+          </div>
         )}
-        {post.tags && post.tags.length > 0 && (
-          <>
-            <span>·</span>
-            <span>{post.tags.slice(0, 3).join(" · ")}</span>
-          </>
+      </div>
+      <div className="p-5">
+        <h3 className="font-semibold text-lg leading-snug group-hover:text-blue-700 line-clamp-2">
+          {post.title}
+        </h3>
+        {post.excerpt && (
+          <p className="mt-2 text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
         )}
+        <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+          {post.published_at && (
+            <span>{new Date(post.published_at).toLocaleDateString("ko-KR")}</span>
+          )}
+          {post.tags && post.tags.length > 0 && (
+            <>
+              <span>·</span>
+              <span className="truncate">{post.tags.slice(0, 3).join(" · ")}</span>
+            </>
+          )}
+        </div>
       </div>
     </Link>
   );

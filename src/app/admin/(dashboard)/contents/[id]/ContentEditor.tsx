@@ -367,13 +367,13 @@ export default function ContentEditor({ initial, topicTitle, sources }: Props) {
             />
           </Field>
           <Field
-            label="커버 이미지 URL"
-            hint="OG 이미지·목록 썸네일에 사용. 비워두면 기본 OG 사용."
+            label="커버 이미지"
+            hint="글 상단 hero · 목록 썸네일 · OG 이미지에 사용. Unsplash 무료 검색 또는 직접 URL 입력."
           >
-            <Input
+            <CoverImagePicker
               value={edit.cover_image_url}
-              onChange={(e) => patch("cover_image_url", e.target.value)}
-              placeholder="https://…"
+              onChange={(url) => patch("cover_image_url", url)}
+              defaultQuery={post.tags?.[0] || edit.title}
             />
           </Field>
           <Field label="슬러그 (읽기 전용)" hint="URL 경로. 변경하려면 시드 스크립트로.">
@@ -505,6 +505,191 @@ function Field({
       <label className="text-sm font-medium text-gray-800">{label}</label>
       {hint && <p className="text-xs text-gray-500">{hint}</p>}
       {children}
+    </div>
+  );
+}
+
+interface UnsplashSearchPhoto {
+  id: string;
+  alt: string;
+  width: number;
+  height: number;
+  color: string | null;
+  thumb: string;
+  small: string;
+  raw: string;
+  regular: string;
+  download_location: string;
+  photographer: string;
+  photographer_username: string;
+  photographer_url: string;
+  unsplash_url: string;
+}
+
+function CoverImagePicker({
+  value,
+  onChange,
+  defaultQuery,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  defaultQuery?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(defaultQuery ?? "");
+  const [photos, setPhotos] = useState<UnsplashSearchPhoto[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function search(q: string) {
+    if (!q.trim()) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch(
+        `/api/admin/unsplash/search?q=${encodeURIComponent(q.trim())}`,
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "검색 실패");
+      setPhotos((data.results ?? []) as UnsplashSearchPhoto[]);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "검색 실패");
+      setPhotos([]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function pick(p: UnsplashSearchPhoto) {
+    // Unsplash API 가이드라인: 사진 사용 결정 시 download tracking 호출
+    try {
+      await fetch("/api/admin/unsplash/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ download_location: p.download_location }),
+      });
+    } catch {
+      // best-effort
+    }
+    // raw URL + 사이즈 파라미터로 cover URL 구성
+    const u = new URL(p.raw);
+    u.searchParams.set("w", "1600");
+    u.searchParams.set("q", "80");
+    u.searchParams.set("fm", "jpg");
+    u.searchParams.set("fit", "crop");
+    onChange(u.toString());
+    setOpen(false);
+  }
+
+  return (
+    <div className="space-y-3">
+      {value && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={value}
+          alt="현재 커버"
+          className="w-full max-w-md rounded-md border aspect-[16/9] object-cover"
+        />
+      )}
+      <div className="flex gap-2">
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://… (직접 URL 입력 가능)"
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? "닫기" : "Unsplash 검색"}
+        </Button>
+        {value && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onChange("")}
+            className="text-red-700"
+          >
+            제거
+          </Button>
+        )}
+      </div>
+
+      {open && (
+        <div className="rounded-md border bg-gray-50 p-3 space-y-3">
+          <div className="flex gap-2">
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  search(query);
+                }
+              }}
+              placeholder="검색어 (예: intermittent fasting, healthy salad, gym)"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => search(query)}
+              disabled={busy || !query.trim()}
+            >
+              {busy ? "검색 중…" : "검색"}
+            </Button>
+          </div>
+
+          {err && (
+            <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
+              {err}
+            </div>
+          )}
+
+          {photos.length === 0 && !busy && !err && (
+            <p className="text-xs text-gray-500">
+              검색어를 입력하고 Enter 또는 검색 버튼. 영어 검색이 결과가 더 풍부해요
+              (예: &quot;diet&quot;, &quot;weight loss&quot;, &quot;healthy
+              breakfast&quot;).
+            </p>
+          )}
+
+          {photos.length > 0 && (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {photos.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => pick(p)}
+                    className="group relative overflow-hidden rounded-md border bg-white hover:ring-2 hover:ring-blue-500 transition"
+                    title={`${p.alt} — ${p.photographer}`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.small}
+                      alt={p.alt}
+                      className="w-full aspect-[16/9] object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] px-2 py-0.5 opacity-0 group-hover:opacity-100 transition truncate">
+                      Photo by {p.photographer}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-gray-500">
+                Unsplash 무료 사진. 클릭 시 자동으로 cover URL 채우고 다운로드
+                트래킹을 호출합니다 (Unsplash API 가이드라인).
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,17 @@ export default function SiteFooter() {
           개인의 건강 문제는 반드시 의료 전문가와 상담하세요.
         </p>
         <p className="text-xs text-gray-400">
+          이미지 제공:{" "}
+          <a
+            href="https://unsplash.com/?utm_source=healthscanner&utm_medium=referral"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-600 underline-offset-2 hover:underline"
+          >
+            Unsplash
+          </a>
+        </p>
+        <p className="text-xs text-gray-400">
           © {new Date().getFullYear()} 헬스스캐너 · healthscanner.co.kr
         </p>
       </div>
