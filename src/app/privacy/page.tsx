@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { Badge } from "@/components/ui/badge";
+import PolicyHero from "@/components/PolicyHero";
 import {
   CONTACT_GENERAL,
   CONTACT_PRIVACY,
@@ -23,17 +23,15 @@ export default function PrivacyPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 py-12 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <div className="mb-10">
-            <Badge className="mb-3">법적 고지</Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-              개인정보처리방침
-            </h1>
-            <p className="text-sm text-gray-500">시행일: {PRIVACY_EFFECTIVE_DATE}</p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 mb-10 text-sm text-blue-900 leading-relaxed">
+      <main className="flex-1 bg-gray-50">
+        <PolicyHero
+          badge="법적 고지"
+          title="개인정보처리방침"
+          effectiveDate={PRIVACY_EFFECTIVE_DATE}
+          description={`${SITE_NAME}의 개인정보 수집·이용·보관·제3자 제공·위탁 현황과 이용자 권리, 광고 쿠키 운용 및 거부 방법을 안내합니다.`}
+        />
+        <div className="max-w-4xl mx-auto px-4 py-10 md:py-12">
+          <div className="bg-teal-50 border border-teal-100 rounded-xl p-5 mb-10 text-sm text-teal-900 leading-relaxed">
             {SITE_NAME}(이하 &ldquo;본 사이트&rdquo;)는 <strong>「개인정보 보호법」</strong>{" "}
             등 관련 법령을 준수하며, 이용자의 개인정보를 안전하게 처리합니다. 본 사이트는 일반
             이용자에게 회원가입을 요구하지 않으며(운영자 전용 관리 영역은 별도 관리), 서비스
@@ -444,7 +442,7 @@ export default function PrivacyPage() {
             </div>
           </section>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 text-sm text-gray-600 mt-12">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 text-sm text-gray-600 mt-12">
             <p className="font-semibold text-gray-900 mb-1">시행일자</p>
             <p>
               본 방침은 <strong>{PRIVACY_EFFECTIVE_DATE}</strong>부터 시행됩니다.

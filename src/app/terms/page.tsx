@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { Badge } from "@/components/ui/badge";
+import PolicyHero from "@/components/PolicyHero";
 import {
   CONTACT_GENERAL,
   SITE_HOST,
@@ -22,15 +22,15 @@ export default function TermsPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 py-12 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <div className="mb-10">
-            <Badge className="mb-3">법적 고지</Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">이용약관</h1>
-            <p className="text-sm text-gray-500">시행일: {TERMS_EFFECTIVE_DATE}</p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 mb-10 text-sm text-blue-900 leading-relaxed">
+      <main className="flex-1 bg-gray-50">
+        <PolicyHero
+          badge="법적 고지"
+          title="이용약관"
+          effectiveDate={TERMS_EFFECTIVE_DATE}
+          description={`${SITE_NAME} 서비스 이용에 관한 약관 — 정보 콘텐츠 제공 범위, 의학적 비대체 고지, 책임 제한, 광고·제휴 정책을 안내합니다.`}
+        />
+        <div className="max-w-4xl mx-auto px-4 py-10 md:py-12">
+          <div className="bg-teal-50 border border-teal-100 rounded-xl p-5 mb-10 text-sm text-teal-900 leading-relaxed">
             본 약관은 {SITE_NAME}(이하 &ldquo;본 사이트&rdquo;)가 제공하는 건강·헬스·다이어트
             정보 콘텐츠 서비스의 이용 조건과 절차, 이용자와 운영자 간의 권리·의무 및 책임
             사항을 규정합니다. 본 사이트는 <strong>일반 정보 제공 서비스</strong>이며, 의학적
@@ -345,7 +345,7 @@ export default function TermsPage() {
             </div>
           </section>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 text-sm text-gray-600 mt-12">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 text-sm text-gray-600 mt-12">
             <p className="font-semibold text-gray-900 mb-1">부칙</p>
             <p>
               본 약관은 <strong>{TERMS_EFFECTIVE_DATE}</strong>부터 시행됩니다.

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import PolicyHero from "@/components/PolicyHero";
 import { Badge } from "@/components/ui/badge";
 import { CONTACT_GENERAL, CONTACT_PRIVACY, SITE_NAME, SITE_URL } from "@/lib/legal";
 
@@ -73,24 +74,17 @@ export default function AboutPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 py-12 px-4">
-        <div className="container mx-auto max-w-3xl">
+      <main className="flex-1 bg-gray-50">
+        <PolicyHero
+          badge="사이트 소개"
+          title="헬스스캐너에 대해"
+          description="최신 의료 논문과 신뢰할 수 있는 매체 보도를 한국어 독자가 이해하기 쉽게 정리합니다. 모든 글에 출처를 명시하고, 사람이 검토한 뒤에만 발행합니다."
+        />
+        <div className="max-w-4xl mx-auto px-4 py-10 md:py-12">
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
           />
-
-          {/* 1. Hero */}
-          <div className="mb-10">
-            <Badge className="mb-3">사이트 소개</Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-              헬스스캐너에 대해
-            </h1>
-            <p className="text-base text-gray-600 leading-relaxed">
-              최신 의료 논문과 신뢰할 수 있는 매체 보도를 한국어 독자가 이해하기 쉽게
-              정리합니다. 모든 글에 출처를 명시하고, 사람이 검토한 뒤에만 발행합니다.
-            </p>
-          </div>
 
           {/* 2. Why */}
           <section className="mb-10">
