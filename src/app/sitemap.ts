@@ -21,9 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/contact`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  // 카테고리 (현재는 ?category=X 쿼리스트링 — 글 20+편 시 정적 라우트 승격 예정)
+  // 카테고리 정적 라우트 (2026-05-09 승격)
   const categoryEntries: MetadataRoute.Sitemap = BLOG_CATEGORIES.map((c) => ({
-    url: `${SITE_URL}/blog?category=${c.slug}`,
+    url: `${SITE_URL}/category/${c.slug}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.7,

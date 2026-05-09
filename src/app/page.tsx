@@ -140,7 +140,7 @@ export default async function HomePage() {
                 return (
                   <Link
                     key={c.slug}
-                    href={`/blog?category=${c.slug}`}
+                    href={`/category/${c.slug}`}
                     className={`group rounded-xl border ${c.color.border} ${c.color.bg} ${c.color.hover} p-4 transition-colors`}
                   >
                     <div className="flex items-center justify-between">

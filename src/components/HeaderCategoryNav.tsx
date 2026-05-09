@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BLOG_CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -10,8 +10,11 @@ interface Props {
 }
 
 export default function HeaderCategoryNav({ variant = "desktop" }: Props) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeCategory = searchParams.get("category");
+  // 활성 카테고리: /category/<slug> 경로 또는 /blog?category=<slug> 쿼리
+  const pathMatch = pathname.match(/^\/category\/([^/]+)/);
+  const activeCategory = pathMatch ? pathMatch[1] : searchParams.get("category");
 
   if (variant === "mobile") {
     return (
@@ -21,7 +24,7 @@ export default function HeaderCategoryNav({ variant = "desktop" }: Props) {
           return (
             <Link
               key={c.slug}
-              href={`/blog?category=${c.slug}`}
+              href={`/category/${c.slug}`}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
                 isActive
                   ? `${c.color.solid} text-white`
@@ -49,7 +52,7 @@ export default function HeaderCategoryNav({ variant = "desktop" }: Props) {
         return (
           <Link
             key={c.slug}
-            href={`/blog?category=${c.slug}`}
+            href={`/category/${c.slug}`}
             className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
               isActive
                 ? `${c.color.solid} text-white`

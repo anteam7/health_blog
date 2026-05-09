@@ -49,7 +49,7 @@ export default function SiteFooter() {
               {BLOG_CATEGORIES.map((c) => (
                 <li key={c.slug}>
                   <Link
-                    href={`/blog?category=${c.slug}`}
+                    href={`/category/${c.slug}`}
                     className="group inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     <span
