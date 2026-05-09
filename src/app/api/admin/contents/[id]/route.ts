@@ -3,6 +3,10 @@ import { revalidatePath } from "next/cache";
 import { createClient as createSSRClient, isAdminEmail } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
 import { CONTENT_STATUSES } from "@/lib/contents";
+import {
+  isBlogCategorySlug,
+  EVIDENCE_LEVELS,
+} from "@/lib/categories";
 
 async function requireAdmin() {
   const supabase = await createSSRClient();
@@ -61,6 +65,42 @@ export async function PUT(
       return NextResponse.json({ error: "invalid_status" }, { status: 400 });
     }
     update.status = s;
+  }
+
+  // AdSense / E-E-A-T 메타 (2026-05-09)
+  if (body.category !== undefined) {
+    const v = nullableStr(body.category);
+    if (v !== null && !isBlogCategorySlug(v)) {
+      return NextResponse.json({ error: "invalid_category" }, { status: 400 });
+    }
+    update.category = v;
+  }
+  if (body.evidence_level !== undefined) {
+    const v = nullableStr(body.evidence_level);
+    if (v !== null && !EVIDENCE_LEVELS.some((e) => e.value === v)) {
+      return NextResponse.json({ error: "invalid_evidence_level" }, { status: 400 });
+    }
+    update.evidence_level = v;
+  }
+  if (body.author_name !== undefined)
+    update.author_name = nullableStr(body.author_name);
+  if (body.author_credential !== undefined)
+    update.author_credential = nullableStr(body.author_credential);
+  if (body.reviewer_name !== undefined)
+    update.reviewer_name = nullableStr(body.reviewer_name);
+  if (body.reviewer_credential !== undefined)
+    update.reviewer_credential = nullableStr(body.reviewer_credential);
+  if (body.reviewed_at !== undefined) {
+    const v = body.reviewed_at;
+    if (v === null || v === "" || v === undefined) {
+      update.reviewed_at = null;
+    } else {
+      const d = new Date(String(v));
+      if (Number.isNaN(d.getTime())) {
+        return NextResponse.json({ error: "invalid_reviewed_at" }, { status: 400 });
+      }
+      update.reviewed_at = d.toISOString();
+    }
   }
 
   if ("title" in update && !update.title) {

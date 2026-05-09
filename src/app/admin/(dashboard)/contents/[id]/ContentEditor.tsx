@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { contentStatusLabel, type HealthContent } from "@/lib/contents";
+import { BLOG_CATEGORIES, EVIDENCE_LEVELS } from "@/lib/categories";
 
 type Tab = "content" | "meta" | "preview";
 
@@ -37,6 +38,24 @@ interface EditableState {
   tags: string[];
   cover_image_url: string;
   status: HealthContent["status"];
+  // E-E-A-T / AdSense 메타 (2026-05-09)
+  category: string;
+  evidence_level: string;
+  author_name: string;
+  author_credential: string;
+  reviewer_name: string;
+  reviewer_credential: string;
+  reviewed_at: string; // datetime-local 형식 — 빈 문자열은 "미설정"
+}
+
+// ISO → datetime-local 입력 (브라우저 로컬 시각)
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off * 60 * 1000);
+  return local.toISOString().slice(0, 16);
 }
 
 function toEditable(p: HealthContent): EditableState {
@@ -47,6 +66,33 @@ function toEditable(p: HealthContent): EditableState {
     tags: p.tags ?? [],
     cover_image_url: p.cover_image_url ?? "",
     status: p.status,
+    category: p.category ?? "",
+    evidence_level: p.evidence_level ?? "",
+    author_name: p.author_name ?? "",
+    author_credential: p.author_credential ?? "",
+    reviewer_name: p.reviewer_name ?? "",
+    reviewer_credential: p.reviewer_credential ?? "",
+    reviewed_at: isoToLocalInput(p.reviewed_at),
+  };
+}
+
+// PUT body 빌더 (handleSave/handlePublish 에서 공통 사용)
+function buildSavePayload(edit: EditableState) {
+  return {
+    title: edit.title,
+    excerpt: edit.excerpt,
+    body_md: edit.body_md,
+    tags: edit.tags,
+    cover_image_url: edit.cover_image_url || null,
+    category: edit.category || null,
+    evidence_level: edit.evidence_level || null,
+    author_name: edit.author_name || null,
+    author_credential: edit.author_credential || null,
+    reviewer_name: edit.reviewer_name || null,
+    reviewer_credential: edit.reviewer_credential || null,
+    reviewed_at: edit.reviewed_at
+      ? new Date(edit.reviewed_at).toISOString()
+      : null,
   };
 }
 
@@ -86,13 +132,7 @@ export default function ContentEditor({ initial, topicTitle, sources }: Props) {
     setBusy(true);
     setMsg(null);
     try {
-      const data = await api("", "PUT", {
-        title: edit.title,
-        excerpt: edit.excerpt,
-        body_md: edit.body_md,
-        tags: edit.tags,
-        cover_image_url: edit.cover_image_url || null,
-      });
+      const data = await api("", "PUT", buildSavePayload(edit));
       const next = data.row as HealthContent;
       setPost(next);
       setEdit(toEditable(next));
@@ -123,13 +163,7 @@ export default function ContentEditor({ initial, topicTitle, sources }: Props) {
     try {
       // 1) 편집 내용 먼저 저장
       if (dirty) {
-        await api("", "PUT", {
-          title: edit.title,
-          excerpt: edit.excerpt,
-          body_md: edit.body_md,
-          tags: edit.tags,
-          cover_image_url: edit.cover_image_url || null,
-        });
+        await api("", "PUT", buildSavePayload(edit));
       }
       // 2) 상태 전환
       const data = await api("/publish", "POST");
@@ -377,6 +411,125 @@ export default function ContentEditor({ initial, topicTitle, sources }: Props) {
               defaultQuery={post.tags?.[0] || edit.title}
             />
           </Field>
+          <div className="border-t pt-5 space-y-5">
+            <h3 className="text-sm font-semibold text-gray-800">
+              분류 / 검토 (E-E-A-T)
+            </h3>
+
+            <Field
+              label="카테고리"
+              hint="공개 사이트 /blog 의 카테고리 nav 에 노출. 5개 화이트리스트 중 하나."
+            >
+              <select
+                value={edit.category}
+                onChange={(e) => patch("category", e.target.value)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                <option value="">— 미지정 —</option>
+                {BLOG_CATEGORIES.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.label} — {c.description}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label="근거 강도"
+              hint="가장 비중 큰 출처의 종류. 글 페이지 칩 · JSON-LD 에 사용."
+            >
+              <select
+                value={edit.evidence_level}
+                onChange={(e) => patch("evidence_level", e.target.value)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                <option value="">— 미지정 —</option>
+                {EVIDENCE_LEVELS.map((ev) => (
+                  <option key={ev.value} value={ev.value}>
+                    {ev.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Field label="저자 이름" hint="공개 페이지 byline · JSON-LD author">
+                <Input
+                  value={edit.author_name}
+                  onChange={(e) => patch("author_name", e.target.value)}
+                  placeholder="예: 안승혁"
+                />
+              </Field>
+              <Field label="저자 소개" hint="byline 부제 (운영자·자격증 등)">
+                <Input
+                  value={edit.author_credential}
+                  onChange={(e) => patch("author_credential", e.target.value)}
+                  placeholder="예: 헬스스캐너 운영자"
+                />
+              </Field>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Field
+                label="검토자 이름"
+                hint="medicallyReviewed 표시. 1인 운영이면 저자와 동일하게 두면 됩니다."
+              >
+                <Input
+                  value={edit.reviewer_name}
+                  onChange={(e) => patch("reviewer_name", e.target.value)}
+                  placeholder="예: 안승혁"
+                />
+              </Field>
+              <Field
+                label="검토자 소개"
+                hint="의료 자격(의사·약사·영양사) 이 있으면 명시. 없으면 '운영자 종합 검토' 정도."
+              >
+                <Input
+                  value={edit.reviewer_credential}
+                  onChange={(e) => patch("reviewer_credential", e.target.value)}
+                  placeholder="예: 운영자 종합 검토"
+                />
+              </Field>
+            </div>
+
+            <Field
+              label="검토 일시"
+              hint="마지막으로 사실관계를 확인한 시각. 글 상단/JSON-LD dateReviewed 에 노출."
+            >
+              <div className="flex gap-2 items-center flex-wrap">
+                <input
+                  type="datetime-local"
+                  value={edit.reviewed_at}
+                  onChange={(e) => patch("reviewed_at", e.target.value)}
+                  className="flex-1 min-w-[180px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    patch(
+                      "reviewed_at",
+                      isoToLocalInput(new Date().toISOString()),
+                    )
+                  }
+                >
+                  지금
+                </Button>
+                {edit.reviewed_at && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => patch("reviewed_at", "")}
+                  >
+                    비우기
+                  </Button>
+                )}
+              </div>
+            </Field>
+          </div>
+
           <Field label="슬러그 (읽기 전용)" hint="URL 경로. 변경하려면 시드 스크립트로.">
             <Input
               value={post.slug}
