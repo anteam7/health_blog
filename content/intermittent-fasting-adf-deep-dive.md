@@ -8,7 +8,7 @@
 
 다이어트 후기에서 "격일 단식 한 달에 7kg" 같은 글, 한 번쯤 보셨을 거예요. **격일 단식(ADF, Alternate-Day Fasting)**은 하루 걸러 평소의 25%만 먹는, 다섯 가지 간헐적 단식 중 가장 강한 방법입니다.
 
-이전 글에서 다룬 [BMJ 2025 메타분석(99건 연구·6,582명)](/blog/intermittent-fasting-5-types-comparison) 결과만 보면 답은 명확해요.
+이전 글에서 다룬 [BMJ 2025 메타분석(99건 연구·6,582명)](/blog/intermittent-fasting-5-types-comparison) 결과만 보면 격일 단식의 우위는 분명합니다.
 
 - **격일 단식 vs 일반 다이어트**: 약 **1.3kg 더** 빠짐
 - **격일 단식 vs 16:8**: 약 **1.7kg 더** 빠짐
