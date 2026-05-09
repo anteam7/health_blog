@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { createClient as createSSRClient, isAdminEmail } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
+import { revalidateContentPaths } from "@/lib/revalidate-content";
 
 async function requireAdmin() {
   const supabase = await createSSRClient();
@@ -43,13 +43,7 @@ export async function POST(
     payload: { slug: data.slug },
   });
 
-  try {
-    revalidatePath(`/blog/${data.slug}`);
-    revalidatePath("/blog");
-    revalidatePath("/sitemap.xml");
-  } catch {
-    // best-effort
-  }
+  revalidateContentPaths({ slug: data.slug, category: data.category });
 
   return NextResponse.json({ row: data });
 }

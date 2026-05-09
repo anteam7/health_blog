@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { createClient as createSSRClient, isAdminEmail } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
+import { revalidateContentPaths } from "@/lib/revalidate-content";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,9 +48,9 @@ export async function POST(
 
   const { data: post } = await sb
     .from("health_contents")
-    .select("slug, status")
+    .select("slug, status, category")
     .eq("id", id)
-    .maybeSingle<{ slug: string; status: string }>();
+    .maybeSingle<{ slug: string; status: string; category: string | null }>();
 
   if (!post) {
     return NextResponse.json({ error: "content_not_found" }, { status: 404 });
@@ -88,12 +88,7 @@ export async function POST(
   });
 
   if (post.status === "published") {
-    try {
-      revalidatePath(`/blog/${post.slug}`);
-      revalidatePath("/blog");
-    } catch {
-      // best-effort
-    }
+    revalidateContentPaths({ slug: post.slug, category: post.category });
   }
 
   return NextResponse.json({ ok: true });

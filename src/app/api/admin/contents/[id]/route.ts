@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { createClient as createSSRClient, isAdminEmail } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
 import { CONTENT_STATUSES } from "@/lib/contents";
@@ -7,6 +6,7 @@ import {
   isBlogCategorySlug,
   EVIDENCE_LEVELS,
 } from "@/lib/categories";
+import { revalidateContentPaths } from "@/lib/revalidate-content";
 
 async function requireAdmin() {
   const supabase = await createSSRClient();
@@ -127,12 +127,7 @@ export async function PUT(
   });
 
   if (data?.slug) {
-    try {
-      revalidatePath(`/blog/${data.slug}`);
-      revalidatePath("/blog");
-    } catch {
-      // best-effort
-    }
+    revalidateContentPaths({ slug: data.slug, category: data.category });
   }
 
   return NextResponse.json({ row: data });

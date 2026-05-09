@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient as createSSRClient, isAdminEmail } from "@/lib/auth/server";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
 import { generateAndStoreCover } from "@/lib/cover-generation";
+import { revalidateContentPaths } from "@/lib/revalidate-content";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,7 +37,7 @@ export async function POST(
   const sb = createAdminClient();
   const { data: post } = await sb
     .from("health_contents")
-    .select("id, slug, title, excerpt, body_md, tags")
+    .select("id, slug, title, excerpt, body_md, tags, category, status")
     .eq("id", id)
     .maybeSingle<{
       id: string;
@@ -45,6 +46,8 @@ export async function POST(
       excerpt: string | null;
       body_md: string | null;
       tags: string[] | null;
+      category: string | null;
+      status: string;
     }>();
 
   if (!post) {
@@ -74,6 +77,10 @@ export async function POST(
         custom_prompt: !!customPrompt,
       },
     });
+
+    if (post.status === "published") {
+      revalidateContentPaths({ slug: post.slug, category: post.category });
+    }
 
     return NextResponse.json({
       ok: true,
