@@ -1,151 +1,456 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import { Badge } from "@/components/ui/badge";
+import {
+  CONTACT_GENERAL,
+  CONTACT_PRIVACY,
+  PRIVACY_CHANGES,
+  PRIVACY_EFFECTIVE_DATE,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
-  description: "헬스스캐너의 개인정보 수집·이용·보관·제3자 제공·쿠키 정책",
+  description: `${SITE_NAME}의 개인정보 수집·이용·보관·제3자 제공·위탁 현황과 이용자 권리, 광고 쿠키 운용 및 거부 방법을 안내합니다.`,
+  alternates: { canonical: `${SITE_URL}/privacy` },
+  robots: { index: true, follow: true },
 };
 
 export default function PrivacyPage() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
-        <article className="max-w-2xl mx-auto px-4 py-12 prose prose-zinc">
-          <h1>개인정보처리방침</h1>
-          <p>최종 수정일: 2026년 4월 29일</p>
+      <main className="flex-1 py-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <div className="mb-10">
+            <Badge className="mb-3">법적 고지</Badge>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+              개인정보처리방침
+            </h1>
+            <p className="text-sm text-gray-500">시행일: {PRIVACY_EFFECTIVE_DATE}</p>
+          </div>
 
-          <p>
-            헬스스캐너(이하 &ldquo;본 사이트&rdquo;)는 개인정보 보호법 등 관련 법령을
-            준수하며, 이용자의 개인정보를 안전하게 처리하기 위해 본 방침을 수립합니다.
-          </p>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 mb-10 text-sm text-blue-900 leading-relaxed">
+            {SITE_NAME}(이하 &ldquo;본 사이트&rdquo;)는 <strong>「개인정보 보호법」</strong>{" "}
+            등 관련 법령을 준수하며, 이용자의 개인정보를 안전하게 처리합니다. 본 사이트는 일반
+            이용자에게 회원가입을 요구하지 않으며(운영자 전용 관리 영역은 별도 관리), 서비스
+            이용 과정에서 수집하는 정보는 아래와 같이 최소한으로 제한됩니다.
+          </div>
 
-          <h2>1. 수집하는 개인정보 항목</h2>
-          <p>본 사이트는 다음 정보를 수집할 수 있습니다.</p>
-          <ul>
-            <li>
-              <strong>자동 수집</strong>: 접속 IP, 브라우저 종류·버전, 운영체제, 접속 일시,
-              방문 페이지, 리퍼러(referrer) URL
-            </li>
-            <li>
-              <strong>문의 시</strong>: 이름(또는 닉네임), 이메일 주소, 문의 내용
-            </li>
-            <li>
-              <strong>관리자 영역</strong>: 운영자가 직접 가입한 계정의 이메일·암호 해시
-            </li>
-          </ul>
+          {/* 1 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              1. 개인정보의 처리 목적
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-3">
+              본 사이트는 다음의 목적을 위해 개인정보를 처리하며, 이 목적 외의 용도로는
+              이용하지 않습니다. 처리 목적이 변경되는 경우에는 사전에 동의를 받거나 법령에 따라
+              필요한 조치를 이행합니다.
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1.5 pl-2">
+              <li>건강·헬스·다이어트 정보 콘텐츠 제공 및 이용 통계 분석</li>
+              <li>이메일 문의·제보·정정 요청 응대 및 회신</li>
+              <li>서비스 품질 개선과 신규 콘텐츠 기획을 위한 이용 현황 분석</li>
+              <li>
+                제3자 광고 네트워크(Google AdSense)를 통한 <strong>맞춤형 광고 게재</strong>{" "}
+                및 광고 성과 측정 <span className="text-xs text-gray-500">(승인 시점에 적용)</span>
+              </li>
+              <li>스팸·어뷰즈 차단 및 보안 사고 대응</li>
+            </ul>
+          </section>
 
-          <h2>2. 수집·이용 목적</h2>
-          <ul>
-            <li>웹사이트 운영 및 콘텐츠 제공</li>
-            <li>방문 통계, 콘텐츠 개선, 부정 이용 차단</li>
-            <li>문의 응대</li>
-            <li>맞춤형 광고 게재(쿠키 동의 시)</li>
-          </ul>
+          {/* 2 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              2. 수집하는 개인정보 항목 및 수집 방법
+            </h2>
+            <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+              <div className="border rounded-lg p-4">
+                <p className="font-semibold text-gray-900 mb-2">가. 자동 수집 항목 (이용 통계)</p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>IP 주소, 쿠키, 브라우저/기기 정보, 접속 일시, 접속 경로</li>
+                  <li>서비스 이용 기록(방문 페이지, 체류 시간, 클릭 이벤트 등)</li>
+                  <li>
+                    수집 방법: 웹사이트 접속 시 Google Analytics 4, Vercel Analytics를 통한
+                    자동 수집
+                  </li>
+                </ul>
+              </div>
+              <div className="border rounded-lg p-4">
+                <p className="font-semibold text-gray-900 mb-2">
+                  나. 광고 관련 자동 수집 항목{" "}
+                  <span className="text-xs text-gray-500 font-normal">
+                    (Google AdSense 승인 시 적용)
+                  </span>
+                </p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>광고 쿠키(DoubleClick 쿠키 포함), 광고 식별자</li>
+                  <li>
+                    광고 노출·클릭 이력, 대략적인 위치(국가·도시 수준), 관심사 추정 정보
+                  </li>
+                  <li>수집 방법: Google AdSense 태그 및 제3자 광고 네트워크의 쿠키</li>
+                </ul>
+                <p className="mt-2 text-xs text-gray-500">
+                  제3자 공급업체(Google 포함)는 쿠키를 사용하여 이용자의 과거 방문 기록에
+                  기반한 광고를 게재할 수 있습니다. 본 사이트는{" "}
+                  <strong>의료 콘텐츠 컨텍스트의 안전을 위해 자동 광고를 사용하지 않으며</strong>
+                  , 본문 내 수동 광고 슬롯만 운영합니다.
+                </p>
+              </div>
+              <div className="border rounded-lg p-4">
+                <p className="font-semibold text-gray-900 mb-2">
+                  다. 이용자가 직접 제공하는 항목 (문의·제보·정정 요청 시)
+                </p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>이메일 주소, 문의 내용 (선택적으로 이름 등)</li>
+                  <li>
+                    수집 방법: <a href={`mailto:${CONTACT_GENERAL}`}>{CONTACT_GENERAL}</a> 또는{" "}
+                    <a href={`mailto:${CONTACT_PRIVACY}`}>{CONTACT_PRIVACY}</a> 으로의 이메일
+                    수신
+                  </li>
+                </ul>
+              </div>
+              <p>
+                본 사이트는 회원가입 절차가 없으며, 이름·전화번호·주민등록번호 등 식별 정보를
+                별도로 수집하지 않습니다.
+              </p>
+            </div>
+          </section>
 
-          <h2>3. 보유·이용 기간</h2>
-          <ul>
-            <li>접속 로그: 최대 6개월 (보안 사고 대응 목적)</li>
-            <li>문의 내용: 응대 완료 후 1년</li>
-            <li>관리자 계정: 운영자 본인 요청 시 즉시 삭제</li>
-          </ul>
+          {/* 3 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              3. 개인정보의 보유 및 이용 기간
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">구분</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">
+                      보유 기간
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600">
+                  <tr className="border-b">
+                    <td className="px-3 py-2">접속 로그·이용 통계 (GA4·Vercel Analytics)</td>
+                    <td className="px-3 py-2">해당 서비스 정책에 따름 (GA4 기본 최대 14개월)</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-3 py-2">광고 쿠키·광고 식별자 (AdSense 승인 시)</td>
+                    <td className="px-3 py-2">Google 정책에 따름 (대부분 13개월 이내)</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-3 py-2">이메일 문의·제보 기록</td>
+                    <td className="px-3 py-2">처리 완료 후 1년 이내 파기</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-3 py-2">관리자 계정 (운영자 1인)</td>
+                    <td className="px-3 py-2">서비스 종료 또는 운영자 본인 요청 시 즉시 삭제</td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2">법령상 보관 의무 정보</td>
+                    <td className="px-3 py-2">관련 법령에 규정된 기간</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-          <h2>4. 제3자 제공 및 위탁</h2>
-          <p>
-            본 사이트는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다.
-            다만 다음 외부 서비스를 운영 목적으로 이용하며, 해당 서비스에 한해 제한적
-            정보가 처리될 수 있습니다.
-          </p>
-          <ul>
-            <li>
-              <strong>Vercel Inc.</strong> (호스팅) — 접속 로그, IP, User-Agent
-              <br />
-              <a
-                href="https://vercel.com/legal/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                개인정보처리방침
-              </a>
-            </li>
-            <li>
-              <strong>Supabase Inc.</strong> (데이터베이스, 인증) — 관리자 인증 정보,
-              사이트 데이터
-              <br />
-              <a
-                href="https://supabase.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                개인정보처리방침
-              </a>
-            </li>
-            <li>
-              <strong>Google LLC</strong> (Google Analytics, AdSense — 도입 시)
-              <br />
-              <a
-                href="https://policies.google.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                개인정보처리방침
-              </a>
-            </li>
-          </ul>
+          {/* 4 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              4. 개인정보의 제3자 제공
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              본 사이트는 이용자의 개인정보를{" "}
+              <strong className="text-gray-900">원칙적으로 외부에 제공하지 않습니다.</strong>{" "}
+              다만, 아래의 경우는 예외로 합니다.
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1.5 pl-2 mt-3">
+              <li>이용자가 사전에 동의한 경우</li>
+              <li>법령의 규정에 의거하거나, 수사 기관의 요구가 있는 경우</li>
+            </ul>
+          </section>
 
-          <h2>5. 쿠키 및 광고</h2>
-          <p>
-            본 사이트는 사용자 경험 개선과 통계 측정을 위해 쿠키(cookie) 및 유사 기술을
-            사용할 수 있습니다. 향후 Google AdSense를 도입할 경우, 제3자 공급업체와 광고
-            네트워크가 광고 서비스를 위해 쿠키를 사용할 수 있습니다.
-          </p>
-          <p>
-            이용자는 브라우저 설정에서 쿠키 저장을 거부할 수 있습니다. 쿠키를 거부할 경우
-            일부 서비스 이용이 제한될 수 있습니다.
-          </p>
-          <p>
-            Google의 광고 쿠키 사용 및 거부 방법은 다음에서 확인하실 수 있습니다.
-          </p>
-          <ul>
-            <li>
-              <a
-                href="https://policies.google.com/technologies/ads"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Google 광고 정책
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://www.google.com/settings/ads"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Google 광고 설정
-              </a>
-            </li>
-          </ul>
+          {/* 5 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              5. 개인정보 처리 위탁
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-3">
+              본 사이트는 원활한 서비스 제공을 위해 아래의 업체에 개인정보 처리를 위탁하고
+              있습니다.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">
+                      수탁업체
+                    </th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">
+                      위탁 업무
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600">
+                  <tr className="border-b">
+                    <td className="px-3 py-2">Vercel Inc.</td>
+                    <td className="px-3 py-2">웹 호스팅, 서버 로그 처리, Vercel Analytics</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-3 py-2">Supabase Inc. (서울 리전)</td>
+                    <td className="px-3 py-2">콘텐츠 데이터베이스 호스팅, 관리자 인증</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-3 py-2">Google LLC</td>
+                    <td className="px-3 py-2">
+                      Google Analytics 4, Search Console 통계 (Google AdSense 승인 시 광고
+                      게재·성과 측정 추가 예정)
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="px-3 py-2">Google LLC (Gemini API)</td>
+                    <td className="px-3 py-2">
+                      콘텐츠 초안 작성 보조 — 운영자가 입력한 자료에 한하며, 이용자 식별 정보
+                      미전송
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2">OpenAI, L.L.C.</td>
+                    <td className="px-3 py-2">
+                      콘텐츠 초안 작성 보조 — 운영자가 입력한 자료에 한하며, 이용자 식별 정보
+                      미전송
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+              Vercel·Google·OpenAI의 서버는 미국 등 해외에 위치할 수 있으며, 자동 수집 정보가
+              인터넷 회선을 통해 국외로 이전될 수 있습니다.
+            </p>
+          </section>
 
-          <h2>6. 이용자의 권리</h2>
-          <p>
-            이용자는 언제든지 본 사이트에 자신의 개인정보 열람·정정·삭제·처리정지를
-            요청할 수 있습니다. 요청은 아래 연락처로 보내주세요.
-          </p>
+          {/* 6 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              6. 쿠키(Cookie)의 운용 및 맞춤형 광고 거부
+            </h2>
+            <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+              <p>
+                본 사이트는 서비스 이용 통계 수집과 광고 성과 측정을 위해 쿠키를 사용합니다.
+                쿠키는 웹사이트 서버가 이용자의 브라우저에 전송하는 소량의 정보이며, 이용자의
+                기기에 저장됩니다.
+              </p>
+              <p>
+                이용자는 브라우저 설정에서 쿠키 저장을 거부할 수 있습니다. 다만, 쿠키 저장을
+                거부할 경우 일부 서비스 기능의 이용에 제약이 있을 수 있습니다.
+              </p>
+              <div className="bg-gray-50 rounded-lg p-4 text-xs">
+                <p className="font-medium text-gray-900 mb-1">쿠키 설정 방법</p>
+                <ul className="space-y-1 text-gray-600">
+                  <li>Chrome: 설정 &gt; 개인정보 및 보안 &gt; 쿠키 및 기타 사이트 데이터</li>
+                  <li>Safari: 환경설정 &gt; 개인정보 보호 &gt; 쿠키 및 웹사이트 데이터</li>
+                  <li>Edge: 설정 &gt; 쿠키 및 사이트 권한 &gt; 쿠키 및 저장된 데이터 관리</li>
+                </ul>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-xs space-y-1">
+                <p className="font-medium text-gray-900 mb-1">맞춤형 광고 거부(Opt-out) 방법</p>
+                <ul className="space-y-1 text-gray-600">
+                  <li>
+                    Google 광고 설정:{" "}
+                    <a
+                      href="https://adssettings.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      adssettings.google.com
+                    </a>
+                  </li>
+                  <li>
+                    제3자 광고 네트워크 일괄 거부 (미국·유럽 사업자 대부분):{" "}
+                    <a
+                      href="https://optout.aboutads.info/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      optout.aboutads.info
+                    </a>
+                  </li>
+                  <li>
+                    Network Advertising Initiative:{" "}
+                    <a
+                      href="https://optout.networkadvertising.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      optout.networkadvertising.org
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
 
-          <h2>7. 개인정보 보호 책임자</h2>
-          <ul>
-            <li>책임자: 안승혁</li>
-            <li>이메일: <a href="mailto:somonday@gmail.com">somonday@gmail.com</a></li>
-          </ul>
+          {/* 7 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              7. 이용자의 권리와 행사 방법
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-3">
+              이용자는 본 사이트에 대해 언제든지 다음과 같은 권리를 행사할 수 있습니다.
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1.5 pl-2">
+              <li>개인정보 열람 요구</li>
+              <li>오류 정정 요구</li>
+              <li>삭제 요구</li>
+              <li>처리 정지 요구</li>
+            </ul>
+            <p className="text-sm text-gray-600 leading-relaxed mt-3">
+              권리 행사는 아래 개인정보 보호책임자에게 전자우편으로 요청하실 수 있으며, 본
+              사이트는 지체 없이 조치하겠습니다.
+            </p>
+          </section>
 
-          <h2>8. 본 방침의 변경</h2>
-          <p>
-            본 방침은 법령·서비스의 변경에 따라 수정될 수 있으며, 변경 시 본 페이지를
-            통해 공지합니다.
-          </p>
-        </article>
+          {/* 8 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              8. 개인정보의 파기
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              본 사이트는 개인정보의 보유 기간이 경과하거나 처리 목적이 달성된 경우 지체 없이
+              해당 정보를 파기합니다. 전자적 파일 형태는 복구·재생이 불가능한 방법으로 영구
+              삭제하며, 종이 문서는 분쇄하거나 소각 처리합니다.
+            </p>
+          </section>
+
+          {/* 9 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              9. 개인정보의 안전성 확보 조치
+            </h2>
+            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1.5 pl-2">
+              <li>HTTPS 전 구간 암호화 통신</li>
+              <li>관리자 계정 접근 권한 최소화 (현재 운영자 1인)</li>
+              <li>
+                외부 위탁 서비스(Supabase·Vercel·Google·OpenAI)의 보안 인증 정책 준수
+              </li>
+              <li>관리자 영역에 대한 IP·세션·역할(권한) 다층 가드 적용</li>
+            </ul>
+          </section>
+
+          {/* 10 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              10. 개인정보 보호책임자
+            </h2>
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 text-sm text-gray-700">
+              <p className="font-semibold text-gray-900 mb-2">개인정보 보호책임자</p>
+              <ul className="space-y-1">
+                <li>구분: {SITE_NAME} 운영자</li>
+                <li>
+                  이메일:{" "}
+                  <a
+                    href={`mailto:${CONTACT_PRIVACY}`}
+                    className="text-blue-600 hover:underline font-medium"
+                  >
+                    {CONTACT_PRIVACY}
+                  </a>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                개인정보 관련 문의, 불만 처리, 피해 구제 등에 관한 사항을 위 이메일로 연락해
+                주시면 지체 없이 답변·처리해 드리겠습니다.
+              </p>
+            </div>
+          </section>
+
+          {/* 11 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              11. 권익 침해 구제 방법
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-3">
+              개인정보 침해에 대한 신고나 상담이 필요한 경우 아래 기관에 문의하실 수 있습니다.
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1.5 pl-2">
+              <li>개인정보침해신고센터 (privacy.kisa.or.kr / 국번없이 118)</li>
+              <li>개인정보분쟁조정위원회 (kopico.go.kr / 1833-6972)</li>
+              <li>대검찰청 사이버수사과 (spo.go.kr / 국번없이 1301)</li>
+              <li>경찰청 사이버수사국 (ecrm.police.go.kr / 국번없이 182)</li>
+            </ul>
+          </section>
+
+          {/* 12 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              12. AI 보조 작성 고지 및 본 방침의 변경
+            </h2>
+            <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+              <p>
+                <strong className="text-gray-900">AI 보조 작성 고지.</strong> 본 사이트의
+                콘텐츠 일부는 운영자가 입력한 자료(논문 초록·뉴스 보도)에 기반하여 생성형
+                AI(Gemini, OpenAI 등)의 도움을 받아 초안이 작성된 뒤, 사람이 검토·편집한 후
+                발행됩니다. AI 도구에는 이용자 식별 정보가 전송되지 않습니다. 자세한 콘텐츠
+                검증 절차는{" "}
+                <Link href="/about" className="text-blue-600 hover:underline">
+                  사이트 소개
+                </Link>
+                를 참고하세요.
+              </p>
+              <p>
+                본 개인정보처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른 변경
+                내용의 추가·삭제·수정이 있는 경우에는 변경 사항 시행 최소 7일 전부터
+                공지합니다. 이용자에게 불리한 변경의 경우에는 30일 전에 공지합니다.
+              </p>
+            </div>
+          </section>
+
+          {/* 변경 이력 */}
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
+              개인정보처리방침 변경 이력
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">버전</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">시행일</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-900">
+                      주요 변경 내용
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600">
+                  {PRIVACY_CHANGES.map((entry) => (
+                    <tr key={entry.version} className="border-b last:border-b-0">
+                      <td className="px-3 py-2">{entry.version}</td>
+                      <td className="px-3 py-2">{entry.date}</td>
+                      <td className="px-3 py-2">{entry.summary}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 text-sm text-gray-600 mt-12">
+            <p className="font-semibold text-gray-900 mb-1">시행일자</p>
+            <p>
+              본 방침은 <strong>{PRIVACY_EFFECTIVE_DATE}</strong>부터 시행됩니다.
+            </p>
+          </div>
+        </div>
       </main>
       <SiteFooter />
     </>

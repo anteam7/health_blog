@@ -57,6 +57,13 @@ export default function DisclaimerPage() {
             적용되지 않을 수 있으며, 정보의 완결성·최신성·특정 목적 적합성을 보장하지
             않습니다.
           </p>
+          <p>
+            발행된 모든 글은 운영자의 검토를 거치며, <strong>분기 1회 정기 재검토</strong>를
+            진행합니다. 새로운 근거가 출현하는 경우에는 정기 일정과 무관하게 즉시 본문과
+            갱신 일자를 업데이트합니다. 글 페이지 상단의 &ldquo;마지막 검토일&rdquo; 표기와
+            구조화 데이터(<code>reviewedBy</code>, <code>lastReviewed</code>)에서 검토 이력을
+            확인하실 수 있습니다.
+          </p>
 
           <h2>5. 외부 링크</h2>
           <p>
@@ -82,7 +89,7 @@ export default function DisclaimerPage() {
           <h2>8. 문의</h2>
           <p>
             본 면책 조항이나 콘텐츠에 대한 문의는{" "}
-            <a href="mailto:anseunghyok@gmail.com">anseunghyok@gmail.com</a> 으로 보내주세요.
+            <a href="mailto:somonday@gmail.com">somonday@gmail.com</a> 으로 보내주세요.
           </p>
         </article>
       </main>

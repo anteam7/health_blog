@@ -53,3 +53,7 @@ gsc-key.json
 *.xls
 
 .vercel
+
+# playwright MCP artifacts (local dev only)
+/.playwright-mcp/
+*.png

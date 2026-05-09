@@ -22,7 +22,7 @@ export default function ContactPage() {
 
           <h2>일반 문의 · 제보 · 정정 요청</h2>
           <p>
-            <a href="mailto:anseunghyok@gmail.com">anseunghyok@gmail.com</a>
+            <a href="mailto:somonday@gmail.com">somonday@gmail.com</a>
           </p>
           <p>
             글에 사실 오류나 누락된 출처가 있다면 알려주세요. 빠르게 검토하고 수정하겠습니다.
@@ -38,7 +38,7 @@ export default function ContactPage() {
 
           <h2>제휴 · 광고 문의</h2>
           <p>
-            <a href="mailto:anseunghyok@gmail.com">anseunghyok@gmail.com</a>
+            <a href="mailto:somonday@gmail.com">somonday@gmail.com</a>
           </p>
           <p>
             본 사이트는 콘텐츠의 독립성을 유지하기 위해 의약품·건강기능식품의 직접 광고나
