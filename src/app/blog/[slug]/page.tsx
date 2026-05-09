@@ -7,13 +7,29 @@ import remarkGfm from "remark-gfm";
 import { createAdminClient } from "@/lib/auth/admin-supabase";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import Breadcrumbs, {
+  buildBreadcrumbJsonLd,
+  type BreadcrumbItem,
+} from "@/components/blog/Breadcrumbs";
+import AuthorMeta, {
+  estimateReadingMinutes,
+} from "@/components/blog/AuthorMeta";
+import AuthorBox from "@/components/blog/AuthorBox";
+import Toc from "@/components/blog/Toc";
+import ShareButtons from "@/components/blog/ShareButtons";
+import {
+  extractToc,
+  extractText,
+  slugifyHeading,
+} from "@/lib/blog-toc";
+import { getCategoryLabel } from "@/lib/categories";
 
 export const revalidate = 600;
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://healthscanner.co.kr";
 const SITE_NAME = "헬스스캐너";
-const AUTHOR_NAME = "헬스스캐너 편집부";
+const FALLBACK_AUTHOR = "헬스스캐너 편집부";
 
 interface Post {
   id: string;
@@ -28,6 +44,13 @@ interface Post {
   updated_at: string;
   source_ids: string[] | null;
   topic_id: string | null;
+  category: string | null;
+  author_name: string | null;
+  author_credential: string | null;
+  reviewer_name: string | null;
+  reviewer_credential: string | null;
+  reviewed_at: string | null;
+  evidence_level: string | null;
 }
 
 interface RelatedPost {
@@ -56,7 +79,7 @@ async function getPost(slug: string): Promise<Post | null> {
     const { data } = await sb
       .from("health_contents")
       .select(
-        "id, slug, title, body_md, excerpt, cover_image_url, tags, status, published_at, updated_at, source_ids, topic_id",
+        "id, slug, title, body_md, excerpt, cover_image_url, tags, status, published_at, updated_at, source_ids, topic_id, category, author_name, author_credential, reviewer_name, reviewer_credential, reviewed_at, evidence_level",
       )
       .eq("slug", slug)
       .eq("status", "published")
@@ -126,7 +149,6 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: post.title,
       description: post.excerpt ?? undefined,
-      // images 도 file convention 이 자동 fallback
     },
   };
 }
@@ -145,18 +167,40 @@ export default async function BlogPostPage({
     getRelated(post.topic_id, post.slug),
   ]);
 
-  const articleSchema = {
+  const tocItems = extractToc(post.body_md);
+  const readingMinutes = estimateReadingMinutes(post.body_md);
+  const postUrl = `${SITE_URL}/blog/${post.slug}`;
+
+  const categoryLabel = post.category
+    ? getCategoryLabel(post.category)
+    : null;
+
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "홈", href: "/" },
+    { label: "블로그", href: "/blog" },
+  ];
+  if (post.category && categoryLabel) {
+    breadcrumbItems.push({
+      label: categoryLabel,
+      href: `/blog?category=${post.category}`,
+    });
+  }
+  breadcrumbItems.push({ label: post.title });
+
+  const blogPostingSchema = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: post.title,
     description: post.excerpt ?? undefined,
     image: post.cover_image_url ?? undefined,
     datePublished: post.published_at ?? undefined,
     dateModified: post.updated_at,
     author: {
-      "@type": "Organization",
-      name: AUTHOR_NAME,
-      url: SITE_URL,
+      "@type": "Person",
+      name: post.author_name ?? FALLBACK_AUTHOR,
+      ...(post.author_credential
+        ? { jobTitle: post.author_credential }
+        : {}),
     },
     publisher: {
       "@type": "Organization",
@@ -165,21 +209,46 @@ export default async function BlogPostPage({
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${SITE_URL}/blog/${post.slug}`,
+      "@id": postUrl,
     },
+    ...(post.reviewer_name
+      ? {
+          reviewedBy: {
+            "@type": "Person",
+            name: post.reviewer_name,
+            ...(post.reviewer_credential
+              ? { jobTitle: post.reviewer_credential }
+              : {}),
+          },
+        }
+      : {}),
+    ...(post.reviewed_at ? { lastReviewed: post.reviewed_at } : {}),
+    audience: {
+      "@type": "PeopleAudience",
+      audienceType: "Patient",
+    },
+    inLanguage: "ko-KR",
   };
+
+  const breadcrumbSchema = buildBreadcrumbJsonLd(breadcrumbItems, SITE_URL);
+
+  // ReactMarkdown h2/h3 id 부여 — extractToc 와 동일 알고리즘으로
+  // 같은 순서·같은 카운터를 굴려야 앵커가 일치한다.
+  const seen = new Map<string, number>();
+  function makeHeadingId(text: string): string {
+    const baseId = slugifyHeading(text);
+    if (!baseId) return "";
+    const c = seen.get(baseId) ?? 0;
+    seen.set(baseId, c + 1);
+    return c === 0 ? baseId : `${baseId}-${c + 1}`;
+  }
 
   return (
     <>
       <SiteHeader />
       <main className="flex-1">
         <article className="max-w-3xl mx-auto px-4 py-10">
-          <Link
-            href="/blog"
-            className="text-sm text-gray-500 hover:text-gray-900"
-          >
-            ← 블로그
-          </Link>
+          <Breadcrumbs items={breadcrumbItems} />
 
           <header className="mt-4 mb-8">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
@@ -190,30 +259,19 @@ export default async function BlogPostPage({
                 {post.excerpt}
               </p>
             )}
-            <div className="mt-5 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
-              <span className="font-medium text-gray-700">{AUTHOR_NAME}</span>
-              {post.published_at && (
-                <>
-                  <span>·</span>
-                  <time dateTime={post.published_at}>
-                    {new Date(post.published_at).toLocaleDateString("ko-KR")}
-                  </time>
-                </>
-              )}
-              {post.published_at &&
-                post.updated_at &&
-                new Date(post.updated_at).toDateString() !==
-                  new Date(post.published_at).toDateString() && (
-                  <span className="text-gray-400">
-                    · 수정 {new Date(post.updated_at).toLocaleDateString("ko-KR")}
-                  </span>
-                )}
-              {post.tags && post.tags.length > 0 && (
-                <>
-                  <span>·</span>
-                  <span>{post.tags.slice(0, 5).join(" · ")}</span>
-                </>
-              )}
+            <div className="mt-5">
+              <AuthorMeta
+                authorName={post.author_name}
+                authorCredential={post.author_credential}
+                publishedAt={post.published_at}
+                updatedAt={post.updated_at}
+                reviewedAt={post.reviewed_at}
+                reviewerName={post.reviewer_name}
+                reviewerCredential={post.reviewer_credential}
+                category={post.category}
+                evidenceLevel={post.evidence_level}
+                readingMinutes={readingMinutes}
+              />
             </div>
           </header>
 
@@ -232,10 +290,18 @@ export default async function BlogPostPage({
 
           <MedicalDisclaimer />
 
-          <div className="prose prose-zinc max-w-none prose-headings:tracking-tight prose-a:text-blue-700 prose-a:underline-offset-2">
+          <Toc items={tocItems} />
+
+          <div className="prose prose-zinc max-w-none prose-headings:tracking-tight prose-a:text-blue-700 prose-a:underline-offset-2 prose-headings:scroll-mt-20">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
+                h2: ({ children }) => (
+                  <h2 id={makeHeadingId(extractText(children))}>{children}</h2>
+                ),
+                h3: ({ children }) => (
+                  <h3 id={makeHeadingId(extractText(children))}>{children}</h3>
+                ),
                 a: (props) => (
                   <a {...props} target="_blank" rel="noopener noreferrer nofollow" />
                 ),
@@ -247,12 +313,28 @@ export default async function BlogPostPage({
 
           {sources.length > 0 && <SourcesBox sources={sources} />}
 
+          <ShareButtons url={postUrl} title={post.title} />
+
+          <AuthorBox
+            authorName={post.author_name}
+            authorCredential={post.author_credential}
+            reviewerName={post.reviewer_name}
+            reviewerCredential={post.reviewer_credential}
+            reviewedAt={post.reviewed_at}
+          />
+
           {related.length > 0 && <RelatedPosts posts={related} />}
 
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(articleSchema),
+              __html: JSON.stringify(blogPostingSchema),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(breadcrumbSchema),
             }}
           />
         </article>
@@ -342,7 +424,7 @@ function SourcesBox({ sources }: { sources: SourceCitation[] }) {
               rel="noopener noreferrer nofollow"
               className="text-blue-700 hover:underline"
             >
-              PubMed
+              {s.source_type === "paper" ? "PubMed" : "원문"}
             </a>
             {s.doi && (
               <>
