@@ -22,6 +22,14 @@ export interface HealthContent {
   updated_at: string;
   source_ids: string[] | null;
   topic_id: string | null;
+  // AdSense / E-E-A-T 메타 (2026-05-09 마이그레이션)
+  category: string | null;
+  author_name: string | null;
+  author_credential: string | null;
+  reviewed_at: string | null;
+  reviewer_name: string | null;
+  reviewer_credential: string | null;
+  evidence_level: string | null;
 }
 
 export function contentStatusLabel(s: string): string {

@@ -68,6 +68,19 @@ ALTER TABLE health_contents
   ADD COLUMN IF NOT EXISTS source_ids UUID[] DEFAULT '{}';
 CREATE INDEX IF NOT EXISTS idx_health_contents_sources ON health_contents USING GIN (source_ids);
 
+-- AdSense 메타 컬럼 (마이그레이션: 2026-05-09_health_contents_meta.sql)
+ALTER TABLE health_contents
+  ADD COLUMN IF NOT EXISTS category VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS author_name VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS author_credential VARCHAR(200),
+  ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS reviewer_name VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS reviewer_credential VARCHAR(200),
+  ADD COLUMN IF NOT EXISTS evidence_level VARCHAR(20);
+CREATE INDEX IF NOT EXISTS idx_health_contents_category
+  ON health_contents(category)
+  WHERE category IS NOT NULL;
+
 -- ─────────────────────────────────────────────
 -- 관리자 액션 로그
 -- ─────────────────────────────────────────────
