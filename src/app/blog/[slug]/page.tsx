@@ -414,7 +414,12 @@ export default async function BlogPostPage({
                 debugLabel="article-footer"
               />
 
-              <ShareButtons url={postUrl} title={post.title} />
+              <ShareButtons
+                url={postUrl}
+                title={post.title}
+                description={post.excerpt ?? undefined}
+                imageUrl={post.cover_image_url ?? undefined}
+              />
 
               <AuthorBox
                 authorName={post.author_name}

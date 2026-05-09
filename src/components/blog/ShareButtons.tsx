@@ -1,15 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
   url: string; // 절대 URL (https://...)
   title: string;
+  description?: string;
+  imageUrl?: string;
 }
 
-// Web Share API + X intent + 링크 복사. 카카오톡은 SDK 도입 후 추가.
-export default function ShareButtons({ url, title }: Props) {
+declare global {
+  interface Window {
+    Kakao?: {
+      isInitialized: () => boolean;
+      init: (key: string) => void;
+      Share?: {
+        sendDefault: (options: Record<string, unknown>) => void;
+      };
+    };
+  }
+}
+
+// Web Share API + X intent + Facebook + 카카오톡 공유 + 링크 복사
+export default function ShareButtons({ url, title, description, imageUrl }: Props) {
   const [toast, setToast] = useState<string | null>(null);
+  const [kakaoReady, setKakaoReady] = useState(false);
+  const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+
+  // Kakao SDK init (env 게이트, 멱등)
+  useEffect(() => {
+    if (!kakaoKey) return;
+    let stopped = false;
+    function tryInit() {
+      if (stopped) return;
+      if (window.Kakao?.isInitialized?.()) {
+        setKakaoReady(true);
+        return;
+      }
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        try {
+          window.Kakao.init(kakaoKey!);
+          setKakaoReady(true);
+          return;
+        } catch {
+          // ignore
+        }
+      }
+      // SDK 아직 로드 안 됨 — 짧게 폴링
+      window.setTimeout(tryInit, 200);
+    }
+    tryInit();
+    return () => {
+      stopped = true;
+    };
+  }, [kakaoKey]);
+
+  function shareKakao() {
+    if (!window.Kakao?.Share) {
+      showToast("카카오 SDK 로딩 중이에요");
+      return;
+    }
+    try {
+      window.Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title,
+          description: description ?? title,
+          imageUrl: imageUrl ?? `${new URL(url).origin}/og-image.jpg`,
+          link: { mobileWebUrl: url, webUrl: url },
+        },
+        buttons: [
+          { title: "글 보기", link: { mobileWebUrl: url, webUrl: url } },
+        ],
+      });
+    } catch {
+      showToast("카카오톡 공유 실패");
+    }
+  }
 
   function showToast(text: string) {
     setToast(text);
@@ -70,6 +137,20 @@ export default function ShareButtons({ url, title }: Props) {
         </svg>
         공유
       </button>
+
+      {kakaoReady && (
+        <button
+          type="button"
+          onClick={shareKakao}
+          className="inline-flex items-center gap-1.5 rounded-full border border-yellow-300 bg-yellow-300 px-3 py-1.5 text-xs font-semibold text-stone-900 hover:bg-yellow-400 hover:border-yellow-400 transition-colors"
+          aria-label="카카오톡으로 공유"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M12 3C6.48 3 2 6.48 2 10.78c0 2.74 1.83 5.14 4.6 6.55-.2.7-.74 2.6-.85 3.01-.13.5.18.5.39.36.16-.11 2.6-1.77 3.66-2.5.72.1 1.46.16 2.2.16 5.52 0 10-3.48 10-7.78S17.52 3 12 3z" />
+          </svg>
+          카카오톡
+        </button>
+      )}
 
       <button type="button" onClick={shareTwitter} className={btn} aria-label="X에 공유">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

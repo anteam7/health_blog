@@ -9,6 +9,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 const GOOGLE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const NAVER_VERIFICATION = process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION;
+const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -116,6 +117,15 @@ export default function RootLayout({
               gtag('config', '${GA_ID}');
             `}</Script>
           </>
+        )}
+        {KAKAO_APP_KEY && (
+          <Script
+            id="kakao-sdk"
+            src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
+            integrity="sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4yyC7wy6K1Hs90nka"
+            crossOrigin="anonymous"
+            strategy="lazyOnload"
+          />
         )}
         {ADSENSE_CLIENT && (
           <>
