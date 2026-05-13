@@ -139,13 +139,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "글을 찾을 수 없음" };
+  const canonical = `${SITE_URL}/blog/${post.slug}`;
   return {
     title: post.title,
     description: post.excerpt ?? undefined,
+    alternates: { canonical },
     openGraph: {
       title: post.title,
       description: post.excerpt ?? undefined,
       type: "article",
+      url: canonical,
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at,
       tags: post.tags ?? undefined,

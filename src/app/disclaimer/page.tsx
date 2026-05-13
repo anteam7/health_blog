@@ -5,11 +5,14 @@ import PolicyHero from "@/components/PolicyHero";
 import { CONTACT_GENERAL } from "@/lib/legal";
 
 const EFFECTIVE_DATE = "2026년 5월 9일";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://healthscanner.co.kr";
 
 export const metadata: Metadata = {
   title: "의료 면책 조항",
   description:
     "헬스스캐너의 콘텐츠는 일반 정보 제공이며, 의학적 진단·치료·처방을 대체하지 않습니다.",
+  alternates: { canonical: `${SITE_URL}/disclaimer` },
 };
 
 export default function DisclaimerPage() {

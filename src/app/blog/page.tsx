@@ -10,6 +10,9 @@ import {
 } from "@/lib/categories";
 import type { Metadata } from "next";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://healthscanner.co.kr";
+
 export const revalidate = 600;
 
 interface PostListItem {
@@ -36,11 +39,15 @@ export async function generateMetadata({
   const cat =
     sp.category && isBlogCategorySlug(sp.category) ? sp.category : null;
   const c = cat ? getCategory(cat) : null;
+  // ?category= 파라미터가 있을 때는 /category/<slug>가 canonical (중복 인덱스 방지).
+  // 파라미터 없는 전체 글 목록일 때만 자기 자신 canonical.
+  const canonical = c ? `${SITE_URL}/category/${c.slug}` : `${SITE_URL}/blog`;
   return {
     title: c ? `${c.label} | 블로그` : "블로그",
     description: c
       ? `${c.label} 카테고리 글 — 논문과 뉴스를 근거로 한 건강 정보`
       : "헬스스캐너의 모든 글 — 논문과 뉴스를 근거로 한 건강 정보",
+    alternates: { canonical },
   };
 }
 

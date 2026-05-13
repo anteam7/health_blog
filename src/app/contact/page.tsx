@@ -4,9 +4,13 @@ import SiteFooter from "@/components/SiteFooter";
 import PolicyHero from "@/components/PolicyHero";
 import { CONTACT_GENERAL, CONTACT_PRIVACY } from "@/lib/legal";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://healthscanner.co.kr";
+
 export const metadata: Metadata = {
   title: "문의",
   description: "헬스스캐너에 문의·제보·정정 요청을 보내실 수 있습니다.",
+  alternates: { canonical: `${SITE_URL}/contact` },
 };
 
 const ITEMS = [
