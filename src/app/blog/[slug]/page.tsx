@@ -35,7 +35,8 @@ export const revalidate = 600;
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://healthscanner.co.kr";
 const SITE_NAME = "헬스스캐너";
-const FALLBACK_AUTHOR = "헬스스캐너 편집부";
+const FALLBACK_AUTHOR = "안 에디터";
+const FALLBACK_AUTHOR_CREDENTIAL = "건강 콘텐츠 리서치 에디터";
 
 interface Post {
   id: string;
@@ -206,10 +207,10 @@ export default async function BlogPostPage({
     dateModified: post.updated_at,
     author: {
       "@type": "Person",
+      "@id": `${SITE_URL}/about#operator`,
       name: post.author_name ?? FALLBACK_AUTHOR,
-      ...(post.author_credential
-        ? { jobTitle: post.author_credential }
-        : {}),
+      jobTitle: post.author_credential ?? FALLBACK_AUTHOR_CREDENTIAL,
+      url: `${SITE_URL}/about`,
     },
     publisher: {
       "@type": "Organization",

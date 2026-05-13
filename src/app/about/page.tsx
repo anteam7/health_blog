@@ -14,10 +14,14 @@ export const metadata: Metadata = {
 };
 
 const OPERATOR = {
-  name: "헬스스캐너 운영자",
-  jobTitle: "사이트 운영 · 콘텐츠 작성",
+  name: "안 에디터",
+  jobTitle: "건강 콘텐츠 리서치 에디터",
+  motivation:
+    "광고성 후기와 효능 과장 정보에 지쳐, 한국어 독자가 광고를 거치지 않고도 논문 근거로 건강 정보를 확인할 수 있는 사이트를 직접 만들기로 했습니다. 효능을 단정하기보다 출처와 한계를 함께 보여주는 글을 목표로 합니다.",
   description:
     "건강·헬스·다이어트 분야의 최신 논문과 신뢰 매체 보도를 한국어 독자가 이해하기 쉽게 정리합니다. 1인 운영 독립 사이트의 모든 글에 대해 자료 수집·교차 검증·편집 책임을 집니다.",
+  honestyNote:
+    "의사·약사·영양사 등 의료 자격은 보유하고 있지 않습니다. 따라서 본 사이트의 콘텐츠는 PubMed·Cochrane·공식 가이드라인·신뢰 매체 같은 외부 출처를 직접 인용해 정리하는 방식으로 운영되며, 진단·처방 같은 의학적 조언을 제공하지 않습니다.",
   knowsAbout: [
     "Intermittent fasting",
     "Diet",
@@ -27,14 +31,6 @@ const OPERATOR = {
     "Chronic disease prevention",
   ],
   email: CONTACT_GENERAL,
-};
-
-const REVIEWER = {
-  name: "헬스스캐너 운영자",
-  jobTitle: "콘텐츠 검토",
-  description:
-    "발행 전 모든 콘텐츠의 출처 인용 정확성·과장 표현·의학적 비대체 고지 노출을 검토합니다. 분기 1회 정기 재검토를 진행하며, 새로운 근거가 출현하면 즉시 갱신합니다.",
-  email: CONTACT_PRIVACY,
 };
 
 const personJsonLd = {
@@ -48,19 +44,6 @@ const personJsonLd = {
       description: OPERATOR.description,
       knowsAbout: OPERATOR.knowsAbout,
       email: `mailto:${OPERATOR.email}`,
-      worksFor: {
-        "@type": "Organization",
-        name: SITE_NAME,
-        url: SITE_URL,
-      },
-    },
-    {
-      "@type": "Person",
-      "@id": `${SITE_URL}/about#reviewer`,
-      name: REVIEWER.name,
-      jobTitle: REVIEWER.jobTitle,
-      description: REVIEWER.description,
-      email: `mailto:${REVIEWER.email}`,
       worksFor: {
         "@type": "Organization",
         name: SITE_NAME,
@@ -169,14 +152,16 @@ export default function AboutPage() {
             </ol>
           </section>
 
-          {/* 5. 운영자·검토자 카드 */}
+          {/* 5. 운영자 + 검토 프로세스 */}
           <section className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 mb-3 pb-2 border-b">
-              운영자 · 검토자
+              운영자 · 검토 프로세스
             </h2>
             <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-              현재는 1인 운영이지만, 작성 책임자(운영자)와 발행 전 검토 책임자(검토자) 역할을
-              분리해 동일인이더라도 각각 표기합니다.
+              현재 1인 운영입니다. 동일인 자가 검토는 신뢰의 한계가 분명해, 검토는 별도 사람이
+              아닌 <strong>외부 출처 인용 + 자동 검증 도구 + 분기 재검토</strong> 프로세스로
+              담보합니다. 외부 의료 전문가 자문위원은 별도 영입 중이며, 영입이 완료되면 이
+              섹션에 실명·자격과 함께 공개할 계획입니다.
             </p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="border rounded-lg p-5">
@@ -184,10 +169,17 @@ export default function AboutPage() {
                   <Badge>운영자</Badge>
                 </div>
                 <p className="font-semibold text-gray-900 mb-1">{OPERATOR.name}</p>
-                <p className="text-xs text-gray-500 mb-2">{OPERATOR.jobTitle}</p>
+                <p className="text-xs text-gray-500 mb-3">{OPERATOR.jobTitle}</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                  {OPERATOR.motivation}
+                </p>
                 <p className="text-sm text-gray-600 leading-relaxed mb-3">
                   {OPERATOR.description}
                 </p>
+                <div className="mb-3 rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-600 leading-relaxed">
+                  <strong className="text-gray-900">자격에 대한 솔직한 안내</strong> ·{" "}
+                  {OPERATOR.honestyNote}
+                </div>
                 <p className="text-xs text-gray-500">
                   관심 분야:{" "}
                   <span className="text-gray-700">{OPERATOR.knowsAbout.join(", ")}</span>
@@ -204,20 +196,41 @@ export default function AboutPage() {
               </div>
               <div className="border rounded-lg p-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <Badge>콘텐츠 검토자</Badge>
+                  <Badge>검토 프로세스</Badge>
                 </div>
-                <p className="font-semibold text-gray-900 mb-1">{REVIEWER.name}</p>
-                <p className="text-xs text-gray-500 mb-2">{REVIEWER.jobTitle}</p>
-                <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                  {REVIEWER.description}
+                <p className="font-semibold text-gray-900 mb-1">
+                  사람 단일 검토자 대신 4단계 프로세스
                 </p>
-                <p className="text-xs text-gray-500">
-                  연락:{" "}
+                <p className="text-xs text-gray-500 mb-3">발행 전 + 발행 후</p>
+                <ul className="space-y-2 text-sm text-gray-600 leading-relaxed list-disc list-inside pl-1">
+                  <li>
+                    <strong className="text-gray-900">외부 출처 인용</strong> · 본문 주장에 PMID·DOI
+                    또는 매체·발행일·URL 명시
+                  </li>
+                  <li>
+                    <strong className="text-gray-900">자동 검증</strong> · 본문에 인용한 PMID 가 실제
+                    PubMed 에 존재하는지 발행 직전 자동 점검
+                  </li>
+                  <li>
+                    <strong className="text-gray-900">사람 1차 검토</strong> · 운영자가 과장 표현,
+                    의학적 비대체 고지 노출, 한계 단락 명시 여부 확인
+                  </li>
+                  <li>
+                    <strong className="text-gray-900">분기 재검토</strong> · 발행 후 분기 1회 모든
+                    글을 다시 살펴 새 근거 반영
+                  </li>
+                </ul>
+                <p className="text-xs text-gray-500 mt-3">
+                  외부 의료 전문가 자문위원 영입은 진행 중입니다. 자문위원 영입 시 본 섹션에 자격·이름
+                  공개 예정.
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  검토·정정 문의:{" "}
                   <a
-                    href={`mailto:${REVIEWER.email}`}
+                    href={`mailto:${CONTACT_PRIVACY}`}
                     className="text-blue-600 hover:underline"
                   >
-                    {REVIEWER.email}
+                    {CONTACT_PRIVACY}
                   </a>
                 </p>
               </div>
